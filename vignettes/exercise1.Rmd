@@ -1,0 +1,110 @@
+---
+title: "exercise1_solutions"
+output: html_document
+date: "2023-02-23"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+r <- 10
+fläche <- pi * r^2
+umfang <- 2 * pi * r
+
+print(paste("Fläche:", fläche, "Umfang:", umfang))
+
+# the command paste() allows to put multiple things into one command like print()
+
+
+
+###
+
+#Generate a sequence of numbers from 0 and pi
+#as a vector with length 5.
+
+seq(0, pi, length.out = 5)
+
+#with lenght they mean how many numbers between 0 and pi, in this example, five.
+
+###
+
+#gauss sum from 1 to 100
+x <- c(1:100)
+x
+sum(1:100) #easy way
+sum(x)
+
+###
+
+#magic trick 
+x = 5
+z <- x *2
+z <- z + 4
+z <- z /2
+z <- z - x
+print(X)
+
+#or x_save <- x , save x for the last step. 
+
+
+###
+
+#Print the object datasets::rivers and consult the manual of this object.
+
+#What is the class of the object?
+#What is the length of the object?
+#Calculate the mean, median, minimum, maximum, and the 33%-quantile across all values
+
+print(datasets::rivers)
+
+class(datasets::rivers) 
+#-> this is nummeric
+
+length(datasets::rivers)
+
+mean(datasets::rivers)
+median(datasets::rivers)
+max(datasets::rivers)
+min(datasets::rivers)
+quantile(datasets::rivers) ##-> gives 0,25,50,75,100th quantile
+
+quantile(datasets::rivers, .33)
+
+###
+
+
+#Print the object datasets::quakes and consult the manual of this object.
+
+#Determine the dimensions of the data frame using the respective function in R.
+#Extract the vector of values in the data frame that contain information about the Richter Magnitude.
+#Determine the value largest value in the vector of event magnitudes.
+#Determine the geographic position of the epicenter of the largest event.
+
+print(datasets::quakes)
+dim(datasets::quakes) 
+
+#shows me rows and columns
+
+vector <- datasets::quakes$mag 
+
+#vctor with just the magnitudes -> max(vector) gives me max magnitude
+
+max(vector)
+
+
+idx <- which.max(magnitudes)  
+print(idx)
+
+#shows me the row in which the earthquake with max magnitude is
+
+datasets::quakes$long[idx]
+datasets::quakes$lat[idx]
+
+#gives me the lat and long
+
+
+
+
+
