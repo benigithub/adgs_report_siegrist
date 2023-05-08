@@ -1,87 +1,142 @@
 ---
-title: "Report Exercise 2"
+title: "Telling a story from Data Report Exercise 2"
 output: html_document
-date: "2023-03-07"
+date: "2023-03-13"
 ---
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-```
+In this exercise, we will work with the dataset airquality, which has information about air quality measurements in New York from May to September 1973.
+There will be five figures and three statistical metrics that will be discussed later. Below I read the libraries necessary for this exercise.
 
-
-## Loading Data and redefining variable
-I load the packages that are necessary for this report exercise.
-
-The .csv file was cleaned by hand. I removed all the unnecessary data.
-
-With the read_csv2() command I was able to load the .csv document, which was using semicolons as a delimiter. After reviewing it, the variable "time" had to be changed from character to numeric, since we will have to work with that later on. With the command is.numeric I check if the change worked and if the veriable time is now numeric.
-
-```{r read data}
-
-library(tidyverse)
-library(readr)
+```{r, echo=FALSE}
+library(ggplot2)
 library(dplyr)
+library(tidyr)
+aq <- datasets::airquality
+```
 
-experiment_data <- read_csv2("data/1249534_S1_tidy.csv")
-experiment_data_subset <- head(experiment_data, n = 3)
-experiment_data_subset
+## Figures
 
-experiment_data <- experiment_data %>% mutate(time = as.numeric(time))
-is.numeric(experiment_data$time)
+Loading the data from the dataset, converting it into my own variables and tidying it.
+This allows me to better work with the data I have and then plotting it. 
+Having the date as one variable, and not month and day as separate variables, is easier to then plot it. With the command "as.Date", I can make a Year-Month-Day variable, by taking the monthly/day variable and connecting them.
+As you can see in the first few rows of the dataset there are already some missing values. For the line plot I decided to just remove them by using na.omit() function.
 
 
-grouped_data <- group_by(experiment_data, experiment)
-grouped_data
+### Line Plot with ozone levels over time
 
-#We now have the data grouped into the differnet 53 experiments
+First tidying data and then creating a line plot with the ozone levels, can tell us a lot about the airquality, since heightened ozone levels are a hazard for humans.
+```{r}
 
+aq_ozone <- aq %>% select(Month, Day, Ozone)
+aq_ozone$Date <- as.Date(paste("1973", aq_ozone$Month, aq_ozone$Day, sep = "-"))
+
+aq_ozone <- select(aq_ozone, -Month, -Day)
+aq_ozone <- na.omit(aq_ozone)
+
+aq_ozonelong <- gather(aq_ozone, key = "Variable", value = "Value", -Date)
+
+ggplot(aq_ozonelong, aes(x = Date, y = Value, color = Variable)) + 
+geom_line() +
+labs(title = "Ozone Levels from May to September 1973 (Figure 1)", x = "Date", y = "Ozone Level (ppb)")
 ```
 
 
-## Calculate log-response-ratio 
-
-Now the log response from each row in the csv file can be calulated and added to the file with the mutate() command. But this is not what we want. We want to have one log-response-ratio for each experiment, so a total of only 53 log-response-ratios. This can be calculated usung the summarize() command and this summarizing the rows of each experiment, then calculating the mean log-response-ratio, which is what we are looking for
+### Barplot Temperature Daily
 
 ```{r}
-grouped_data_RR <- mutate(grouped_data, RR = log(co2_increased_mean / co2_ambient_mean))
-grouped_data_RR
+aq_daily <- aq %>%
+  mutate(Date = as.Date(paste(1973, Month, Day, sep = "-"), "%Y-%m-%d")) %>%
+  select(Date, Temp) %>%
+  na.omit()
 
-summary_data <- summarize(grouped_data_RR, mean_log_ratio = mean(log(co2_increased_mean / co2_ambient_mean)))
-knitr::kable(summary_data)
+ggplot(aq_daily, aes(x = Date, y = Temp)) +
+  geom_bar(stat = "identity", fill = "blue", width = 0.5) +
+  labs(title = "Temperature Daily (Figure 2)", x = "Date", y = "Temperature (F)") 
 ```
 
-## Aggregtae data into three times phases
 
-Now we aggregate the data across all experiments and split it up into three time phases:
-- early phase (<3 years since start)
-- middle phase (3-6 years since start)
-- late phase (>6 years since start)
+### Scatter Plot Temperature vs Ozone levels
 
-Then the log-response-ratio can be calculated again, the file is now named experiment_data_RR.
+This scatterplot can show us the correlation between two variables.
 
 ```{r}
-experiment_data_RR <- mutate(experiment_data, RR = log(co2_increased_mean / co2_ambient_mean))
-experiment_data_RR
+ggplot(data = aq, aes(x = Temp, y = Ozone)) +
+  geom_point() +
+  geom_smooth(method = lm, se = FALSE, col = "red") +
+  xlab("Temperature (Fahrenheit)") +
+  ylab("Ozone levels (ppb)") +
+  ggtitle("Temperature vs Ozone levels (May-September 1973) (Figure 3)")
 ```
 
-##Creating phase column
-
-By creating a column named "Phase" I can group the data by years. There are three phases named "Early, Mid, Late". It is done with the cut() command, taking the column time and making breaks at 0,3,6, and Infinity. Then labeling them as Early, Mid and Late. This way I can later take the mean log-ratio from each phase, and what I am left with are three log-response-ratios, one from each Phase. I show the first three rows of the dataset after applying the cut() command to show what it looks like, you can see, the last column is now "Phase" with the first three experiments being part of the early phase.
+  
+### Scatterplot of Ozone vs. Solar Radiation
 
 ```{r}
-experiment_data_RR$Phase <- cut(experiment_data_RR$time, breaks = c(0, 3, 6, Inf), 
-                       labels = c("Early", "Mid", "Late"), 
-                       include.lowest = TRUE)
-experiment_data_RR
-experiment_data_RR_subset <- head(experiment_data_RR, n = 3)
-knitr::kable(experiment_data_RR_subset)
-
-
-mean_RR_by_phase <- tapply(experiment_data_RR$RR, experiment_data_RR$Phase, mean)
-mean_RR_by_phase
+ggplot(data = aq, aes(x = Solar.R, y = Ozone, color = Day)) +
+  geom_point() +
+  geom_smooth(method = lm, se = FALSE, col = "red") +
+  xlab("Solar Radiation (Langleys)") +
+  ylab("Ozone (ppb)") +
+  ggtitle("Scatterplot of Solar Radiation vs. Ozone daily (Figure 4)")
 ```
 
 
 
-####
+## Statistical Metrics
 
+### Mean of Ozone for each month
+```{r}
+ozone_monthly <- aq %>%
+  mutate(month = as.Date(paste(1973, Month, "1", sep = "-"), "%Y-%m-%d")) %>%
+  group_by(month = lubridate::floor_date(month, unit = "month")) %>%
+  summarise(mean_ozone = mean(Ozone, na.rm = TRUE))
+
+print(ozone_monthly)
+```
+
+
+This mean can be used to determine if the Ozone levels are heightened and are harmful to human life.
+
+
+
+### Correlations between the variables
+
+One statistical metric is the correlation between variables of the dataset. By using the command cor(), I can calculate this value, which can range from -1 to +1. The negative values being negative correlations, and the postivie values positive correlations. This allows me to see how the variables affect eachother
+
+```{r}
+aq_tidy <- na.omit(aq)
+
+correlations <- cor(aq_tidy[, c("Ozone", "Solar.R", "Wind", "Temp")])
+print(correlations)
+```
+
+- Ozone/Solar.R = 0.35, positive correlation. Higher Solar Radiation leads to higher Ozone.
+- Ozone/Wind = -0.61, negative correlation. 
+- Ozone/Temp = 0.70 strong positive correlation. 
+- Solar.R = -0.12 weak negative correlation.
+- Solar.R/Temp = 0.29 positive correlation.
+- Wind/Temp = -0.50 
+
+### Percentiles of Temperature
+
+```{r}
+temp_percentiles <- quantile(aq$Temp, c(0.25, 0.5, 0.75), na.rm = TRUE)
+
+print(paste("Temperature Percentiles:", temp_percentiles))
+```
+
+
+## Discussion
+
+To asses air quality, ozone at ground level is an important factor. It is formed through the reaction with gases in the presence of sunlight. As can be seen in Fig.1, through the months June-September there is a heightened concentration of Ozone, often exceeding 100 parts per billion, which is a level set by the WHO Air quality guideline. The mean ozone levesl in July and August exceed the level of 50, and is seen as a moderate risk (World Health Organization: WHO). In the line plot we can see, that there are many extremes in this month, and the concentration can change very quickly.
+
+To look at the Temperatures from May-September, the 25/50/75 percentiles are calculated, and the values are 72, 79, 85. Generally high temperatures, with the top 25% of the temperatures over 85F. In Fig.2 we can see that June, July and August are warmer months. A hypothesis is that there is a correlation between ozone and temperature. This is visualized in Fig.3, which shows a correlation between the two variables.
+
+As written in the WHO guidelines, the  ozone is formed as a reaction of gases with sunlight (World Health Organization: WHO) So the temperature could just be an outcome of the higher solar radiation, and not directly responsible for the heightened Ozone levels. In Fig.4 the correlation between Ozone and Solar Radiation is shown, which also indicates a correlation.
+All correlations between the variables are also calculated statistically. As we can see, for Ozone vs Solar Radiation the outcome is 0.35, which indicates a positive correlation. Ozone vs Temperature has an even higher value of 0.70, but since we have read the WHO page, we can say for sure that the effect of higher ozone comes from the solar radiation and that the temperature is just a cause of this higher solar radiation.
+
+What is interesting to see, is that there is a strong negative correlation between ozone levels and wind speed. It could be interesting to investigate this, as this could be the result of rainy/stormy days with a lot of wind and no ozone production, or also sunny days with high wind distributing the formed ozone across the city and the countryside. This could be a possible question for a further examination of the air quality 
+
+#### Literature:
+
+World Health Organization: WHO. “Ambient (Outdoor) Air Pollution.” www.who.int, Dec. 2022, www.who.int/news-room/fact-sheets/detail/ambient-(outdoor)-air-quality-and-health.

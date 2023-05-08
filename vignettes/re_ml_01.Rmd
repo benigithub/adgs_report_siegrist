@@ -1,0 +1,15 @@
+---
+title: "report_5"
+output: html_document
+date: "2023-05-02"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
+
