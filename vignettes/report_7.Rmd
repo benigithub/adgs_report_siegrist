@@ -1,0 +1,72 @@
+---
+title: "Report Exercise Chapter 10"
+output: html_document
+date: "2023-05-11"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(ggplot2)
+library(dplyr)
+library(rsample)
+library(caret)
+library(rsample)
+library(recipes)
+library(cowplot)
+
+
+daily_fluxes_davos <- read_csv("FLX_CH-Dav_FLUXNET2015_FULLSET_DD_1997-2014_1-3.csv")
+daily_fluxes_lae <- read_csv("FLX_CH-Dav_FLUXNET2015_FULLSET_DD_1997-2014_1-3.csv")
+
+```
+
+Loading of data and packages
+
+
+```{r}
+set.seed(123)  # for reproducibility
+
+split <- rsample::initial_split(daily_fluxes_davos, prop = 0.8, strata = "VPD_F")
+daily_fluxes_davos_train <- rsample::training(split)
+daily_fluxes_davos_test <- rsample::testing(split)
+
+split <- rsample::initial_split(daily_fluxes_lae, prop = 0.8, strata = "VPD_F")
+daily_fluxes_lae_train <- rsample::training(split)
+daily_fluxes_lae_test <- rsample::testing(split)
+
+
+
+ggplot(davos_mod_cv)
+ggplot(lae_mod_cv)
+print(davos_mod_cv)
+print(lae_mod_cv)
+
+```
+First model formulation, then train the model with the training data, using also the 10 fold cross validation and in the end also display the optimal k value.
+
+```{r}
+
+## metrics within site davos
+davos_within_site <- eval_model(mod = davos_mod_cv, df_train = daily_fluxes_davos_train, df_test = daily_fluxes_davos_test)
+print(davos_within_site)
+
+# metrics within site laegern
+laegern_within_site <- eval_model(mod = lae_mod_cv, df_train = daily_fluxes_lae_train, df_test = daily_fluxes_lae_test)
+print(laegern_within_site)
+
+
+#laegern acros site
+laegern_across_site_eval <- eval_model(mod = davos_mod_cv,
+                                       df_train = daily_fluxes_davos_train,
+                                       df_test = daily_fluxes_lae_test)
+
+print(laegern_across_site_eval)
+
+
+#davos across site
+davos_across_site_eval <- eval_model(mod = lae_mod_cv,
+                                     df_train = daily_fluxes_lae_train,
+                                     df_test = daily_fluxes_davos_test)
+print(davos_across_site_eval)
+

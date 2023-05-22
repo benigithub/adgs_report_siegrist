@@ -14,7 +14,7 @@ I load the packages that are necessary for this report exercise.
 
 The .csv file was cleaned by hand. I removed all the unnecessary data.
 
-With the read_csv2() command I was able to load the .csv document, which was using semicolons as a delimiter. After reviewing it, the variable "time" had to be changed from character to numeric, since we will have to work with that later on. With the command is.numeric I check if the change worked and if the veriable time is now numeric.
+With the read_csv2() command I was able to load the .csv document, which was using semicolons as a delimiter. After reviewing it, the variable "time" had to be changed from character to numeric, since we will have to work with that later on. With the command is.numeric I check if the change worked and if the variable time is now numeric.
 
 ```{r read data}
 

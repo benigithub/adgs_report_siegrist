@@ -3,12 +3,13 @@ library(ggplot2)
 library(dplyr)
 library(rsample)
 library(caret)
-daily_fluxes <- read_csv("./data/FLX_CH-Dav_FLUXNET2015_FULLSET_DD_1997-2014_1-3.csv")  
-
+library(rsample)
+library(recipes)
+library(cowplot)
+daily_fluxes <- read_csv("FLX_CH-Dav_FLUXNET2015_FULLSET_DD_1997-2014_1-3.csv")
 daily_fluxes |> 
   ggplot(aes(x = GPP_NT_VUT_REF, y = ..count..)) + 
   geom_histogram()
-
 
 
 # Data splitting
@@ -25,11 +26,7 @@ pp <- recipes::recipe(GPP_NT_VUT_REF ~ SW_IN_F + VPD_F + TA_F,
   recipes::step_scale(all_numeric(), -all_outcomes())
 
 
-
-
-
-
-# Fit linear regression model
+#fit LM model
 mod_lm <- caret::train(
   pp, 
   data = daily_fluxes_train |> drop_na(), 
@@ -38,7 +35,8 @@ mod_lm <- caret::train(
   metric = "RMSE"
 )
 
-# Fit KNN model
+
+# Fit KNN model k=8
 mod_knn <- caret::train(
   pp, 
   data = daily_fluxes_train |> drop_na(), 
@@ -113,3 +111,9 @@ eval_model(mod = mod_lm, df_train = daily_fluxes_train, df_test = daily_fluxes_t
 
 # KNN
 eval_model(mod = mod_knn, df_train = daily_fluxes_train, df_test = daily_fluxes_test)
+
+
+
+
+
+

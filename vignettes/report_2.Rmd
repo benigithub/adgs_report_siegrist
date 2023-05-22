@@ -135,7 +135,7 @@ To look at the Temperatures from May-September, the 25/50/75 percentiles are cal
 As written in the WHO guidelines, the  ozone is formed as a reaction of gases with sunlight (World Health Organization: WHO) So the temperature could just be an outcome of the higher solar radiation, and not directly responsible for the heightened Ozone levels. In Fig.4 the correlation between Ozone and Solar Radiation is shown, which also indicates a correlation.
 All correlations between the variables are also calculated statistically. As we can see, for Ozone vs Solar Radiation the outcome is 0.35, which indicates a positive correlation. Ozone vs Temperature has an even higher value of 0.70, but since we have read the WHO page, we can say for sure that the effect of higher ozone comes from the solar radiation and that the temperature is just a cause of this higher solar radiation.
 
-What is interesting to see, is that there is a strong negative correlation between ozone levels and wind speed. It could be interesting to investigate this, as this could be the result of rainy/stormy days with a lot of wind and no ozone production, or also sunny days with high wind distributing the formed ozone across the city and the countryside. This could be a possible question for a further examination of the air quality 
+What is interesting to see, is that there is a strong negative correlation between ozone levels and wind speed. It could be interesting to investigate this, as this could be the result of rainy/stormy days with a lot of wind and no ozone production, or also sunny days with high wind distributing the formed ozone across the city and the countryside. This could be a possible question for a further examination of the air quality.
 
 #### Literature:
 
