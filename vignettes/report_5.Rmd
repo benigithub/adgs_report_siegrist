@@ -1,0 +1,101 @@
+---
+title: "Report Exercise 5 Stepwise Regression"
+output: html_document
+date: "2023-04-17"
+---
+
+### Introduction
+
+In this Report Exercise we are building stepwise forward regression, trying to model GPP as a function of predictors in the dataset of half-hourly ecosystem fluxes. GPP is the gross primary production, the total amount of CO2 fixed by land plants per unit time. In a first step, we load the libraries and the data, which is a .csv file. Reading the specifications of this dataset, allows us to see which predictor variables are available. In a next step, we define the response and the predictor variables. 
+
+```{r setup, include=FALSE, echo=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+
+
+library(tidyverse)
+library(ggplot2)
+library(dplyr)
+```
+```{r}
+
+half_hourly_fluxes <- read_csv("df_for_stepwise_regression.csv")
+spec(half_hourly_fluxes)
+
+
+response <- half_hourly_fluxes$GPP_NT_VUT_REF
+predictors <- c("TA_F", "SW_IN_F", "LW_IN_F", "VPD_F", "PA_F", "P_F", "WS_F", "TA_F_MDS", "SW_IN_F_MDS", "LW_IN_F_MDS", "VPD_F_MDS", "CO2_F_MDS", "PPFD_IN", "USTAR")
+print(predictors)
+```
+
+### Evaluation of all bivariate models (single predictor)
+
+Conducting a Regression with all the predictors, but only using one after another, and not connecting them together. For this, I use an empty vector and a for-loop, which calculates the R-squared of each predictor/response variable. After that, the highest R-squared value is taken, and linear regression calculated again to get the AIC and the name of the variable. In this case it is the variable PPFD_IN, the photosynthetic photon flux density.
+
+
+
+```{r}
+r_2_values <- c()
+for (predictor in predictors) {
+  formel <- formula(paste("GPP_NT_VUT_REF ~", predictor))
+  model <- lm(formel, data = half_hourly_fluxes)
+  summary_model <- summary(model)
+  print(summary_model)
+  r_squared <- summary_model$r.squared
+  r_2_values <- c(r_2_values, r_squared)
+  print(r_2_values)
+}
+
+
+
+
+best_r_2 <- which.max(r_2_values)
+best_name <- predictors[best_r_2]
+best_formel <- formula(paste("GPP_NT_VUT_REF ~", best_name))
+best_model <- lm(best_formel, data = half_hourly_fluxes)
+best_aic <- AIC(best_model)
+print(r_2_values)
+cat("Lowest AIC:", best_aic, 
+    "Variable:", best_name)
+
+
+```
+
+
+
+# increase to p + 1
+Here we increase p, the predictor varable by one each time and calculate the best AIC (the lowest) for each increase. This is then printed at the bottom. The smallest AIC is 42844 and the best model is printed as summary().
+
+```{r, echo=FALSE, include= FALSE}
+response <- half_hourly_fluxes$GPP_NT_VUT_REF
+predictors <- c("TA_F", "SW_IN_F", "LW_IN_F", "VPD_F", "PA_F", "P_F", "WS_F", "TA_F_MDS", "SW_IN_F_MDS", "LW_IN_F_MDS", "VPD_F_MDS", "CO2_F_MDS", "PPFD_IN", "USTAR")
+
+small_aic <- Inf
+best_modell <- NULL
+
+for (i in 1:14) {
+     combinations <- combn(predictors, i)
+      print(combinations)
+     for (j in 1:ncol(combinations)){
+       formel_all_p <- formula(paste("GPP_NT_VUT_REF ~", paste(combinations[,j], collapse = "+")))
+       modell_lm <- lm(formel_all_p, data = half_hourly_fluxes)
+       aic <- AIC(modell_lm)
+       if (aic < small_aic){
+         small_aic <- aic
+         best_modell <- modell_lm
+       } else {
+         break
+     }
+    }
+  }
+
+summary(best_modell)
+print(small_aic)
+
+```
+```{r}
+summary(best_modell)
+print(small_aic)
+
+
+```

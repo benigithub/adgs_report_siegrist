@@ -1,29 +1,142 @@
 ---
-title: "report_3"
+title: "Report Exercise 3 Air quality data visualisation"
 output: html_document
-date: "2023-04-17"
+date: "2023-03-13"
 ---
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+In this exercise, we will work with the dataset airquality, which has information about air quality measurements in New York from May to September 1973.
+There will be five figures and three statistical metrics that will be discussed later. Below I read the libraries necessary for this exercise.
+
+```{r, echo=FALSE}
+library(ggplot2)
+library(dplyr)
+library(tidyr)
+aq <- datasets::airquality
 ```
 
-## R Markdown
+## Figures
 
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+Loading the data from the dataset, converting it into my own variables and tidying it.
+This allows me to better work with the data I have and then plotting it. 
+Having the date as one variable, and not month and day as separate variables, is easier to then plot it. With the command "as.Date", I can make a Year-Month-Day variable, by taking the monthly/day variable and connecting them.
+As you can see in the first few rows of the dataset there are already some missing values. For the line plot I decided to just remove them by using na.omit() function.
 
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
 
-```{r cars}
-summary(cars)
+### Line Plot with ozone levels over time
+
+First tidying data and then creating a line plot with the ozone levels, can tell us a lot about the airquality, since heightened ozone levels are a hazard for humans.
+```{r}
+
+aq_ozone <- aq %>% select(Month, Day, Ozone)
+aq_ozone$Date <- as.Date(paste("1973", aq_ozone$Month, aq_ozone$Day, sep = "-"))
+
+aq_ozone <- select(aq_ozone, -Month, -Day)
+aq_ozone <- na.omit(aq_ozone)
+
+aq_ozonelong <- gather(aq_ozone, key = "Variable", value = "Value", -Date)
+
+ggplot(aq_ozonelong, aes(x = Date, y = Value, color = Variable)) + 
+geom_line() +
+labs(title = "Ozone Levels from May to September 1973 (Figure 1)", x = "Date", y = "Ozone Level (ppb)")
 ```
 
-## Including Plots
 
-You can also embed plots, for example:
+### Barplot Temperature Daily
 
-```{r pressure, echo=FALSE}
-plot(pressure)
+```{r}
+aq_daily <- aq %>%
+  mutate(Date = as.Date(paste(1973, Month, Day, sep = "-"), "%Y-%m-%d")) %>%
+  select(Date, Temp) %>%
+  na.omit()
+
+ggplot(aq_daily, aes(x = Date, y = Temp)) +
+  geom_bar(stat = "identity", fill = "blue", width = 0.5) +
+  labs(title = "Temperature Daily (Figure 2)", x = "Date", y = "Temperature (F)") 
 ```
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+
+### Scatter Plot Temperature vs Ozone levels
+
+This scatterplot can show us the correlation between two variables.
+
+```{r}
+ggplot(data = aq, aes(x = Temp, y = Ozone)) +
+  geom_point() +
+  geom_smooth(method = lm, se = FALSE, col = "red") +
+  xlab("Temperature (Fahrenheit)") +
+  ylab("Ozone levels (ppb)") +
+  ggtitle("Temperature vs Ozone levels (May-September 1973) (Figure 3)")
+```
+
+  
+### Scatterplot of Ozone vs. Solar Radiation
+
+```{r}
+ggplot(data = aq, aes(x = Solar.R, y = Ozone, color = Day)) +
+  geom_point() +
+  geom_smooth(method = lm, se = FALSE, col = "red") +
+  xlab("Solar Radiation (Langleys)") +
+  ylab("Ozone (ppb)") +
+  ggtitle("Scatterplot of Solar Radiation vs. Ozone daily (Figure 4)")
+```
+
+
+
+## Statistical Metrics
+
+### Mean of Ozone for each month
+```{r}
+ozone_monthly <- aq %>%
+  mutate(month = as.Date(paste(1973, Month, "1", sep = "-"), "%Y-%m-%d")) %>%
+  group_by(month = lubridate::floor_date(month, unit = "month")) %>%
+  summarise(mean_ozone = mean(Ozone, na.rm = TRUE))
+
+print(ozone_monthly)
+```
+
+
+This mean can be used to determine if the Ozone levels are heightened and are harmful to human life.
+
+
+
+### Correlations between the variables
+
+One statistical metric is the correlation between variables of the dataset. By using the command cor(), I can calculate this value, which can range from -1 to +1. The negative values being negative correlations, and the postivie values positive correlations. This allows me to see how the variables affect eachother
+
+```{r}
+aq_tidy <- na.omit(aq)
+
+correlations <- cor(aq_tidy[, c("Ozone", "Solar.R", "Wind", "Temp")])
+print(correlations)
+```
+
+- Ozone/Solar.R = 0.35, positive correlation. Higher Solar Radiation leads to higher Ozone.
+- Ozone/Wind = -0.61, negative correlation. 
+- Ozone/Temp = 0.70 strong positive correlation. 
+- Solar.R = -0.12 weak negative correlation.
+- Solar.R/Temp = 0.29 positive correlation.
+- Wind/Temp = -0.50 
+
+### Percentiles of Temperature
+
+```{r}
+temp_percentiles <- quantile(aq$Temp, c(0.25, 0.5, 0.75), na.rm = TRUE)
+
+print(paste("Temperature Percentiles:", temp_percentiles))
+```
+
+
+## Discussion
+
+To asses air quality, ozone at ground level is an important factor. It is formed through the reaction with gases in the presence of sunlight. As can be seen in Fig.1, through the months June-September there is a heightened concentration of Ozone, often exceeding 100 parts per billion, which is a level set by the WHO Air quality guideline. The mean ozone levesl in July and August exceed the level of 50, and is seen as a moderate risk (World Health Organization: WHO). In the line plot we can see, that there are many extremes in this month, and the concentration can change very quickly.
+
+To look at the Temperatures from May-September, the 25/50/75 percentiles are calculated, and the values are 72, 79, 85. Generally high temperatures, with the top 25% of the temperatures over 85F. In Fig.2 we can see that June, July and August are warmer months. A hypothesis is that there is a correlation between ozone and temperature. This is visualized in Fig.3, which shows a correlation between the two variables.
+
+As written in the WHO guidelines, the  ozone is formed as a reaction of gases with sunlight (World Health Organization: WHO) So the temperature could just be an outcome of the higher solar radiation, and not directly responsible for the heightened Ozone levels. In Fig.4 the correlation between Ozone and Solar Radiation is shown, which also indicates a correlation.
+All correlations between the variables are also calculated statistically. As we can see, for Ozone vs Solar Radiation the outcome is 0.35, which indicates a positive correlation. Ozone vs Temperature has an even higher value of 0.70, but since we have read the WHO page, we can say for sure that the effect of higher ozone comes from the solar radiation and that the temperature is just a cause of this higher solar radiation.
+
+What is interesting to see, is that there is a strong negative correlation between ozone levels and wind speed. It could be interesting to investigate this, as this could be the result of rainy/stormy days with a lot of wind and no ozone production, or also sunny days with high wind distributing the formed ozone across the city and the countryside. This could be a possible question for a further examination of the air quality.
+
+#### Literature:
+
+World Health Organization: WHO. “Ambient (Outdoor) Air Pollution.” www.who.int, Dec. 2022, www.who.int/news-room/fact-sheets/detail/ambient-(outdoor)-air-quality-and-health.
