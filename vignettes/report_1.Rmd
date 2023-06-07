@@ -1,5 +1,5 @@
 ---
-title: "Report Exercise 1"
+title: "Report Exercise 2 Tidy Data"
 output: html_document
 date: "2023-03-07"
 ---
@@ -22,7 +22,7 @@ library(tidyverse)
 library(readr)
 library(dplyr)
 
-experiment_data <- read_csv2("data/1249534_S1_tidy.csv")
+experiment_data <- read_csv2("1249534_S1_tidy.csv")
 experiment_data_subset <- head(experiment_data, n = 3)
 experiment_data_subset
 
@@ -33,14 +33,14 @@ is.numeric(experiment_data$time)
 grouped_data <- group_by(experiment_data, experiment)
 grouped_data
 
-#We now have the data grouped into the differnet 53 experiments
+#We now have the data grouped into the different 53 experiments
 
 ```
 
 
 ## Calculate log-response-ratio 
 
-Now the log response from each row in the csv file can be calulated and added to the file with the mutate() command. But this is not what we want. We want to have one log-response-ratio for each experiment, so a total of only 53 log-response-ratios. This can be calculated usung the summarize() command and this summarizing the rows of each experiment, then calculating the mean log-response-ratio, which is what we are looking for
+Now the log response from each row in the csv file can be c analculatedd added to the file with the mutate() command. But this is not what we want. We want to have one log-response-ratio for each experiment, so a total of only 53 log-response-ratios. This can be calculated using the summarize() command and this summarizing the rows of each experiment, then calculating the mean log-response-ratio, which is what we are looking for.
 
 ```{r}
 grouped_data_RR <- mutate(grouped_data, RR = log(co2_increased_mean / co2_ambient_mean))
@@ -64,7 +64,7 @@ experiment_data_RR <- mutate(experiment_data, RR = log(co2_increased_mean / co2_
 experiment_data_RR
 ```
 
-##Creating phase column
+## Creating phase column
 
 By creating a column named "Phase" I can group the data by years. There are three phases named "Early, Mid, Late". It is done with the cut() command, taking the column time and making breaks at 0,3,6, and Infinity. Then labeling them as Early, Mid and Late. This way I can later take the mean log-ratio from each phase, and what I am left with are three log-response-ratios, one from each Phase. I show the first three rows of the dataset after applying the cut() command to show what it looks like, you can see, the last column is now "Phase" with the first three experiments being part of the early phase.
 

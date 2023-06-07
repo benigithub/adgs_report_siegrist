@@ -1,8 +1,16 @@
 ---
-title: "Report Exercise Chapter 10"
+title: "Report Exercise 7 Flux Modelling"
 output: html_document
 date: "2023-05-11"
 ---
+## Introduction
+
+This exercise cannot be run anymore. I was able to run it until a few days ago, but when I tried to finish the work on it, it just wouldn't work anymore. It gives me an error in the eval_model() function, assumably in the "test_for_markdown_7.R" file, but I was not able to resolve it. 
+
+
+## Loading data
+
+This is how I load the data and the needed packages. 
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
@@ -19,9 +27,12 @@ library(cowplot)
 daily_fluxes_davos <- read_csv("FLX_CH-Dav_FLUXNET2015_FULLSET_DD_1997-2014_1-3.csv")
 daily_fluxes_lae <- read_csv("FLX_CH-Dav_FLUXNET2015_FULLSET_DD_1997-2014_1-3.csv")
 
+source("C:/Users/benis/OneDrive - Universitaet Bern/Dokumente/Studium/ADGS/adgs_report_siegrist/R/test_for_markdown_7.R")
+
 ```
 
-Loading of data and packages
+## Splitting Data
+In the code below, I split my data in a training and a test set.
 
 
 ```{r}
@@ -43,6 +54,8 @@ print(davos_mod_cv)
 print(lae_mod_cv)
 
 ```
+
+## Model formulation and training model
 First model formulation, then train the model with the training data, using also the 10 fold cross validation and in the end also display the optimal k value.
 
 ```{r}
@@ -69,4 +82,24 @@ davos_across_site_eval <- eval_model(mod = lae_mod_cv,
                                      df_train = daily_fluxes_lae_train,
                                      df_test = daily_fluxes_davos_test)
 print(davos_across_site_eval)
+
+```
+
+
+## Evaluation across sites and within sites
+
+```{r}
+print(pooled_metrics)
+
+
+davos_pooled_evaluation <- eval_model(mod = pooled_mod_cv,
+                                     df_train = pooled_train_data,
+                                     df_test = daily_fluxes_davos_test)
+
+davos_pooled_evaluation <- eval_model(mod = pooled_mod_cv,
+                                      df_train = pooled_train_data,
+                                      df_test = daily_fluxes_lae_test)
+
+```
+
 

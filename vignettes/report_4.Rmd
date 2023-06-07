@@ -1,5 +1,5 @@
 ---
-title: "Report Exercise 4 Stepwise Regression"
+title: "Report Exercise 5 Stepwise Regression"
 output: html_document
 date: "2023-04-17"
 ---
@@ -63,8 +63,9 @@ cat("Lowest AIC:", best_aic,
 
 
 
-#increase to p + 1
-```{r}
+# increase to p + 1
+Here we increase p, the predictor varable by one each time and calculate the best AIC (the lowest) for each increase. This is then printed at the bottom. The smallest AIC is 42844 and the best model is printed as summary().
+```{r, echo=FALSE, include= FALSE}
 response <- half_hourly_fluxes$GPP_NT_VUT_REF
 predictors <- c("TA_F", "SW_IN_F", "LW_IN_F", "VPD_F", "PA_F", "P_F", "WS_F", "TA_F_MDS", "SW_IN_F_MDS", "LW_IN_F_MDS", "VPD_F_MDS", "CO2_F_MDS", "PPFD_IN", "USTAR")
 
@@ -89,5 +90,11 @@ for (i in 1:14) {
 
 summary(best_modell)
 print(small_aic)
+
+```
+```{r}
+summary(best_modell)
+print(small_aic)
+
 
 ```

@@ -1,5 +1,5 @@
 ---
-title: "Report Exercise Chapter 10"
+title: "Report Exercise 6 KNN"
 author: "Benjamin Siegrist"
 output: 
   html_document:
